@@ -287,6 +287,11 @@ class TicTacToe {
 
     createFireworks() {
         const container = document.getElementById('fireworksContainer');
+        if (!container) {
+            console.error('Fireworks container not found!');
+            return;
+        }
+
         const colors = ['#ff6b6b', '#4834d4', '#ffd700', '#00cec9', '#fd79a8', '#fdcb6e'];
 
         console.log('Creating fireworks!'); // 調試用
@@ -305,61 +310,54 @@ class TicTacToe {
     }
 
     createFireworkExplosion(container, colors) {
-        const centerX = Math.random() * (window.innerWidth - 100) + 50;
-        const centerY = Math.random() * (window.innerHeight * 0.5) + window.innerHeight * 0.1;
+        // 隨機位置
+        const x = Math.random() * window.innerWidth;
+        const y = Math.random() * (window.innerHeight * 0.6) + (window.innerHeight * 0.1);
 
-        console.log(`Creating explosion at ${centerX}, ${centerY}`); // 調試用
-
-        // 創建中心爆炸效果
+        // 創建爆炸中心點
         const explosion = document.createElement('div');
         explosion.className = 'firework-explosion';
-        explosion.style.left = centerX + 'px';
-        explosion.style.top = centerY + 'px';
-        explosion.style.width = '20px';
-        explosion.style.height = '20px';
-        explosion.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-        explosion.style.borderRadius = '50%';
-        explosion.style.boxShadow = '0 0 20px currentColor';
-        container.appendChild(explosion);
+        explosion.style.left = x + 'px';
+        explosion.style.top = y + 'px';
 
-        // 創建散射粒子
-        for (let i = 0; i < 25; i++) {
+        // 創建粒子
+        for (let i = 0; i < 30; i++) {
             const particle = document.createElement('div');
             particle.className = 'firework-particle';
 
+            // 隨機顏色
             const color = colors[Math.floor(Math.random() * colors.length)];
             particle.style.backgroundColor = color;
-            particle.style.boxShadow = `0 0 10px ${color}`;
+            particle.style.boxShadow = `0 0 6px ${color}`;
+
+            // 隨機方向和距離
+            const angle = (Math.PI * 2 * i) / 30;
+            const velocity = Math.random() * 100 + 50;
+            const vx = Math.cos(angle) * velocity;
+            const vy = Math.sin(angle) * velocity;
 
             // 設置初始位置
-            particle.style.left = centerX + 'px';
-            particle.style.top = centerY + 'px';
+            particle.style.left = '0px';
+            particle.style.top = '0px';
 
-            // 計算隨機方向和距離
-            const angle = (Math.PI * 2 * i) / 25 + (Math.random() - 0.5) * 0.5;
-            const velocity = Math.random() * 150 + 100;
-            const deltaX = Math.cos(angle) * velocity;
-            const deltaY = Math.sin(angle) * velocity + Math.random() * 50; // 添加重力效果
+            // 添加到爆炸點
+            explosion.appendChild(particle);
 
-            // 設置動畫
-            particle.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
-
-            container.appendChild(particle);
-
-            // 清理粒子
+            // 動畫粒子
             setTimeout(() => {
-                if (particle.parentNode) {
-                    particle.parentNode.removeChild(particle);
-                }
-            }, 2000);
+                particle.style.transform = `translate(${vx}px, ${vy}px)`;
+                particle.style.opacity = '0';
+            }, 10);
         }
 
-        // 清理爆炸中心
+        container.appendChild(explosion);
+
+        // 清理這個爆炸效果
         setTimeout(() => {
             if (explosion.parentNode) {
                 explosion.parentNode.removeChild(explosion);
             }
-        }, 600);
+        }, 2000);
     }
 
     resetGame() {
@@ -372,14 +370,21 @@ class TicTacToe {
         document.querySelectorAll('.cell').forEach(cell => {
             cell.textContent = '';
             cell.className = 'cell';
+            cell.style.animation = '';
         });
 
-        // 清理狀態
-        document.getElementById('gameStatus').textContent = '';
-        document.getElementById('gameStatus').className = '';
+        // 清理狀態顯示
+        const statusElement = document.getElementById('gameStatus');
+        if (statusElement) {
+            statusElement.textContent = '';
+            statusElement.className = '';
+        }
 
         // 清理煙火
-        document.getElementById('fireworksContainer').innerHTML = '';
+        const fireworksContainer = document.getElementById('fireworksContainer');
+        if (fireworksContainer) {
+            fireworksContainer.innerHTML = '';
+        }
 
         this.updateDisplay();
     }
