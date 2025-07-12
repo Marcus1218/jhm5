@@ -7,7 +7,7 @@
 ```
 jhm5/
 ├── README.md
-├── Reminder/             # 智能提醒管理器
+├── Reminder/             # 提醒事項管理器
 │   ├── index.html
 │   ├── script.js
 │   └── style.css
