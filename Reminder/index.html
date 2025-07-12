@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>提醒事項管理器</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-bell"></i> 提醒事項管理器</h1>
+            <p>輕鬆管理您的日常提醒事項</p>
+        </header>
+
+        <div class="add-reminder-section">
+            <div class="input-group">
+                <label for="reminderInput" class="sr-only">提醒內容</label>
+                <input type="text" id="reminderInput" placeholder="輸入您的提醒事項..." maxlength="100">
+                <button id="addBtn" class="add-btn">
+                    <i class="fas fa-plus"></i> 新增提醒
+                </button>
+            </div>
+            <div class="reminder-stats">
+                <span class="stat">
+                    <i class="fas fa-list"></i>
+                    總計：<span id="totalCount">0</span>
+                </span>
+                <span class="stat">
+                    <i class="fas fa-check-circle"></i>
+                    已完成：<span id="completedCount">0</span>
+                </span>
+                <span class="stat">
+                    <i class="fas fa-clock"></i>
+                    待辦：<span id="pendingCount">0</span>
+                </span>
+            </div>
+        </div>
+
+        <div class="filter-section">
+            <button class="filter-btn active" data-filter="all">全部</button>
+            <button class="filter-btn" data-filter="pending">待辦</button>
+            <button class="filter-btn" data-filter="completed">已完成</button>
+        </div>
+
+        <div class="reminders-container">
+            <div id="remindersList" class="reminders-list">
+                <div class="empty-state">
+                    <i class="fas fa-calendar-plus"></i>
+                    <h3>還沒有提醒事項</h3>
+                    <p>開始新增您的第一個提醒吧！</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
