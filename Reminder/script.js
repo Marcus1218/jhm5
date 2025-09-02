@@ -377,8 +377,6 @@ class ReminderManager {
                 filtered = filtered.filter(r => r.category === this.currentFilter);
                 break;
         }
-
-        // 排序
         filtered.sort((a, b) => {
             switch (this.currentSort) {
                 case 'created-desc':
@@ -1119,7 +1117,7 @@ class ReminderManager {
         if ('Notification' in window && Notification.permission === 'granted') {
             new Notification('提醒事項到期', {
                 body: reminder.text,
-                icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 6.5L20.25 7.25L19 6L19.75 5.25L21 6.5ZM5 6L3.75 5.25L4.5 4.5L5.75 5.75L5 6ZM12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22ZM12 8.5C15.04 8.5 17.5 10.96 17.5 14V16.5L19 18V19H5V18L6.5 16.5V14C6.5 10.96 8.96 8.5 12 8.5Z"/></svg>',
+                icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 6.5L20.25 7.25L19 6L19.75 5.25L21 6.5ZM5 6L3.75 5.25L4.5 4.5L5.75 5.75L5 6ZM12 22C13.1 22 14 Blackjack.1 14 20H10C10 Blackjack.1 10.9 22 12 22ZM12 8.5C15.04 8.5 17.5 10.96 17.5 14V16.5L19 18V19H5V18L6.5 16.5V14C6.5 10.96 8.96 8.5 12 8.5Z"/></svg>',
                 tag: `reminder-${reminder.id}`
             });
         }
