@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 測試 - 世界猜猜樂</title>
+    <style>
+        body {
+            font-family: 'Arial', 'Microsoft JhengHei', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        #map {
+            height: 400px;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Google Maps API 診斷工具</h1>
+        <p>這個工具將幫助你診斷API配置問題</p>
+
+        <div id="status-container">
+            <div class="status warning">⏳ 正在載入 Google Maps API...</div>
+        </div>
+
+        <div>
+            <button class="test-button" onclick="testBasicMap()">測試基本地圖</button>
+            <button class="test-button" onclick="testStreetView()">測試街景</button>
+            <button class="test-button" onclick="showApiInfo()">顯示API資訊</button>
+        </div>
+
+        <div id="map"></div>
+
+        <div id="info-container" style="margin-top: 20px;"></div>
+    </div>
+
+    <script>
+        let testMap;
+        let testStreetView;
+
+        function showStatus(message, type = 'warning') {
+            const container = document.getElementById('status-container');
+            container.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function showInfo(message) {
+            const container = document.getElementById('info-container');
+            container.innerHTML = `<div class="status warning">${message}</div>`;
+        }
+
+        function initTest() {
+            try {
+                if (typeof google === 'undefined') {
+                    showStatus('❌ Google Maps API 未載入', 'error');
+                    showInfo(`
+                        <h3>可能的原因：</h3>
+                        <ul>
+                            <li>網路連線問題</li>
+                            <li>API 金鑰無效</li>
+                            <li>API 未啟用</li>
+                            <li>域名限制設定問題</li>
+                        </ul>
+                        <h3>解決步驟：</h3>
+                        <ol>
+                            <li>前往 <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Google Cloud Console</a></li>
+                            <li>檢查你的 API 金鑰設定</li>
+                            <li>確認已啟用 Maps JavaScript API</li>
+                            <li>檢查應用程式限制設定</li>
+                        </ol>
+                    `);
+                    return;
+                }
+
+                showStatus('✅ Google Maps API 載入成功！', 'success');
+                showInfo(`
+                    <h3>API 狀態：</h3>
+                    <ul>
+                        <li>✅ Google Maps API: 已載入</li>
+                        <li>✅ API 金鑰: ${google.maps ? '有效' : '無效'}</li>
+                        <li>✅ 域名: ${window.location.origin}</li>
+                    </ul>
+                    <p>請點擊上方按鈕測試具體功能</p>
+                `);
+
+            } catch (error) {
+                showStatus('❌ 初始化失敗: ' + error.message, 'error');
+            }
+        }
+
+        function testBasicMap() {
+            try {
+                testMap = new google.maps.Map(document.getElementById('map'), {
+                    zoom: 8,
+                    center: { lat: 25.0330, lng: 121.5654 }, // 台北
+                });
+
+                showStatus('✅ 基本地圖測試成功！', 'success');
+            } catch (error) {
+                showStatus('❌ 地圖測試失敗: ' + error.message, 'error');
+            }
+        }
+
+        function testStreetView() {
+            try {
+                testStreetView = new google.maps.StreetViewPanorama(
+                    document.getElementById('map'), {
+                        position: { lat: 25.0330, lng: 121.5654 },
+                        pov: {
+                            heading: 34,
+                            pitch: 10
+                        }
+                    }
+                );
+
+                showStatus('✅ 街景測試成功！', 'success');
+            } catch (error) {
+                showStatus('❌ 街景測試失敗: ' + error.message, 'error');
+            }
+        }
+
+        function showApiInfo() {
+            showInfo(`
+                <h3>當前配置資訊：</h3>
+                <ul>
+                    <li><strong>API 金鑰:</strong> AIzaSyCkb3gNyldoHpt7IwyduZtXQ2Br1K0ooc0</li>
+                    <li><strong>域名:</strong> ${window.location.origin}</li>
+                    <li><strong>完整 URL:</strong> ${window.location.href}</li>
+                    <li><strong>用戶代理:</strong> ${navigator.userAgent.substring(0, 50)}...</li>
+                </ul>
+                <h3>需要在 Google Cloud Console 中設定的 HTTP 引薦者：</h3>
+                <ul>
+                    <li>${window.location.origin}/*</li>
+                    <li>localhost:8000/*</li>
+                    <li>127.0.0.1:8000/*</li>
+                </ul>
+            `);
+        }
+
+        // Google Maps API 錯誤處理
+        function gm_authFailure() {
+            showStatus('❌ 認證失敗！API 金鑰可能有問題', 'error');
+            showInfo(`
+                <h3>認證失敗的常見原因：</h3>
+                <ul>
+                    <li><strong>API 金鑰無效</strong> - 請檢查是否正確複製</li>
+                    <li><strong>API 未啟用</strong> - 請啟用 Maps JavaScript API</li>
+                    <li><strong>域名限制</strong> - 請在 API 金鑰設定中加入: <code>${window.location.origin}/*</code></li>
+                    <li><strong>配額超限</strong> - 請檢查使用量</li>
+                </ul>
+                <p><a href="https://console.cloud.google.com/apis/credentials" target="_blank">👉 前往 Google Cloud Console 修復</a></p>
+            `);
+        }
+
+        window.gm_authFailure = gm_authFailure;
+    </script>
+
+    <script async defer
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCkb3gNyldoHpt7IwyduZtXQ2Br1K0ooc0&libraries=geometry&callback=initTest">
+    </script>
+</body>
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API 即時診斷</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        #map { height: 400px; width: 100%; margin: 20px 0; border: 2px solid #ddd; }
+        #streetview { height: 400px; width: 100%; margin: 20px 0; border: 2px solid #ddd; }
+        .log {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Google Maps API 即時診斷</h1>
+
+        <div id="console-log" class="log">診斷開始...\n</div>
+
+        <div id="status-container">
+            <div id="loading-status" class="status warning">⏳ 正在載入 API...</div>
+        </div>
+
+        <button onclick="testBasicMap()">測試基本地圖</button>
+        <button onclick="testStreetView()">測試街景</button>
+        <button onclick="testGeometry()">測試幾何計算</button>
+        <button onclick="clearLog()">清除日誌</button>
+
+        <div id="map"></div>
+        <div id="streetview"></div>
+
+        <div id="detailed-info" style="margin-top: 20px;"></div>
+    </div>
+
+    <script>
+        let logElement = document.getElementById('console-log');
+        let map, streetView;
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const colorCode = {
+                'info': '#3498db',
+                'success': '#2ecc71',
+                'error': '#e74c3c',
+                'warning': '#f39c12'
+            }[type] || '#ecf0f1';
+
+            logElement.innerHTML += `<span style="color: ${colorCode}">[${timestamp}] ${message}</span>\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function updateStatus(message, type) {
+            const statusContainer = document.getElementById('status-container');
+            statusContainer.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function clearLog() {
+            logElement.innerHTML = '日誌已清除...\n';
+        }
+
+        // 全域錯誤捕獲
+        window.onerror = function(msg, url, line, col, error) {
+            log(`JavaScript 錯誤: ${msg} (行 ${line})`, 'error');
+            return false;
+        };
+
+        // API 載入回調
+        function initDiagnosis() {
+            log('🔍 開始 API 診斷', 'info');
+
+            if (typeof google === 'undefined') {
+                log('❌ Google 對象未定義', 'error');
+                updateStatus('❌ Google Maps API 載入失敗', 'error');
+                return;
+            }
+
+            if (typeof google.maps === 'undefined') {
+                log('❌ google.maps 未定義', 'error');
+                updateStatus('❌ Maps 對象載入失敗', 'error');
+                return;
+            }
+
+            log('✅ Google Maps API 載入成功', 'success');
+            updateStatus('✅ API 載入成功！可以開始測試', 'success');
+
+            // 檢查可用的服務
+            const services = ['Map', 'StreetViewPanorama', 'Marker', 'geometry'];
+            services.forEach(service => {
+                if (service === 'geometry') {
+                    if (google.maps.geometry && google.maps.geometry.spherical) {
+                        log(`✅ ${service} 服務可用`, 'success');
+                    } else {
+                        log(`❌ ${service} 服務不可用`, 'error');
+                    }
+                } else if (google.maps[service]) {
+                    log(`✅ ${service} 服務可用`, 'success');
+                } else {
+                    log(`❌ ${service} 服務不可用`, 'error');
+                }
+            });
+
+            showDetailedInfo();
+        }
+
+        function showDetailedInfo() {
+            const info = document.getElementById('detailed-info');
+            info.innerHTML = `
+                <div class="status info">
+                    <h3>📊 API 詳細資訊</h3>
+                    <p><strong>版本:</strong> ${google.maps.version || '未知'}</p>
+                    <p><strong>載入庫:</strong> ${google.maps.modules ? Object.keys(google.maps.modules).join(', ') : '無'}</p>
+                    <p><strong>當前時間:</strong> ${new Date().toLocaleString()}</p>
+                    <p><strong>用戶代理:</strong> ${navigator.userAgent.substring(0, 100)}...</p>
+                </div>
+            `;
+        }
+
+        function testBasicMap() {
+            log('🗺️ 測試基本地圖功能...', 'info');
+
+            try {
+                map = new google.maps.Map(document.getElementById('map'), {
+                    zoom: 8,
+                    center: { lat: 25.0330, lng: 121.5654 }, // 台北
+                    mapTypeId: 'roadmap'
+                });
+
+                log('✅ 地圖創建成功', 'success');
+
+                // 添加標記測試
+                const marker = new google.maps.Marker({
+                    position: { lat: 25.0330, lng: 121.5654 },
+                    map: map,
+                    title: '測試標記'
+                });
+
+                log('✅ 標記添加成功', 'success');
+
+                // 地圖事件測試
+                map.addListener('click', function(event) {
+                    log(`🖱️ 地圖點擊: ${event.latLng.lat()}, ${event.latLng.lng()}`, 'info');
+                });
+
+                log('✅ 地圖事件綁定成功', 'success');
+
+            } catch (error) {
+                log(`❌ 地圖測試失敗: ${error.message}`, 'error');
+            }
+        }
+
+        function testStreetView() {
+            log('🏙️ 測試街景功能...', 'info');
+
+            try {
+                streetView = new google.maps.StreetViewPanorama(
+                    document.getElementById('streetview'), {
+                        position: { lat: 25.0330, lng: 121.5654 },
+                        pov: {
+                            heading: 34,
+                            pitch: 10
+                        },
+                        zoom: 1
+                    }
+                );
+
+                log('✅ 街景創建成功', 'success');
+
+                // 街景事件測試
+                streetView.addListener('position_changed', function() {
+                    log('📍 街景位置變更', 'info');
+                });
+
+                log('✅ 街景事件綁定成功', 'success');
+
+            } catch (error) {
+                log(`❌ 街景測試失敗: ${error.message}`, 'error');
+            }
+        }
+
+        function testGeometry() {
+            log('📐 測試幾何計算功能...', 'info');
+
+            try {
+                if (!google.maps.geometry || !google.maps.geometry.spherical) {
+                    throw new Error('幾何庫未載入');
+                }
+
+                const pos1 = new google.maps.LatLng(25.0330, 121.5654);
+                const pos2 = new google.maps.LatLng(35.6762, 139.6503);
+
+                const distance = google.maps.geometry.spherical.computeDistanceBetween(pos1, pos2);
+
+                log(`✅ 距離計算成功: ${Math.round(distance / 1000)} 公里`, 'success');
+
+            } catch (error) {
+                log(`❌ 幾何測試失敗: ${error.message}`, 'error');
+            }
+        }
+
+        // API 認證失敗處理
+        function gm_authFailure() {
+            log('❌ API 認證失敗', 'error');
+            updateStatus('❌ API 認證失敗 - 檢查金鑰設定', 'error');
+        }
+
+        // API 載入錯誤處理
+        function onApiError() {
+            log('❌ API 載入錯誤', 'error');
+            updateStatus('❌ API 載入失敗 - 檢查網路連線', 'error');
+        }
+
+        // 設定全域函數
+        window.initDiagnosis = initDiagnosis;
+        window.gm_authFailure = gm_authFailure;
+
+        log('📝 診斷工具載入完成', 'info');
+        log('⏳ 等待 Google Maps API 載入...', 'warning');
+    </script>
+
+    <!-- Google Maps API 載入，新增更多錯誤處理 -->
+    <script async defer
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCkb3gNyldoHpt7IwyduZtXQ2Br1K0ooc0&libraries=geometry&callback=initDiagnosis"
+            onerror="onApiError()">
+    </script>
+</body>
+</html>
+

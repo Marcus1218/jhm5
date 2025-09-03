@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>世界猜猜樂 - World Guesser</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="loading" class="loading-screen">
+        <div class="loading-content">
+            <h1>世界猜猜樂</h1>
+            <p>載入中...</p>
+            <div class="loading-spinner"></div>
+        </div>
+    </div>
+
+    <div id="game-container" class="game-container" style="display: none;">
+        <header class="game-header">
+            <h1>世界猜猜樂</h1>
+            <div class="game-info">
+                <span class="round-info">第 <span id="current-round">1</span> 輪 / 共 5 輪</span>
+                <span class="score-info">總分：<span id="total-score">0</span></span>
+            </div>
+        </header>
+
+        <div class="game-content">
+            <div class="streetview-container">
+                <div id="streetview" class="streetview"></div>
+                <div class="streetview-overlay">
+                    <button id="next-round" class="next-button" style="display: none;">下一輪</button>
+                </div>
+            </div>
+
+            <div class="map-container">
+                <div id="map" class="map"></div>
+                <div class="map-controls">
+                    <button id="guess-button" class="guess-button" disabled>在地圖上點擊來猜測位置</button>
+                    <button id="new-game" class="new-game-button">新遊戲</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-panel">
+            <div class="round-result" id="round-result" style="display: none;">
+                <h3>第 <span id="result-round"></span> 輪結果</h3>
+                <p>距離：<span id="result-distance"></span> 公里</p>
+                <p>得分：<span id="result-points"></span> 分</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="game-end" class="game-end-screen" style="display: none;">
+        <div class="game-end-content">
+            <h2>遊戲結束！</h2>
+            <p class="final-score">最終得分：<span id="final-score">0</span> / 25000</p>
+            <div class="score-breakdown" id="score-breakdown"></div>
+            <button id="play-again" class="play-again-button">再玩一次</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+
+    <!-- Google Maps API -->
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCkb3gNyldoHpt7IwyduZtXQ2Br1K0ooc0&libraries=geometry&callback=initGame">
+    </script>
+</body>
+</html>

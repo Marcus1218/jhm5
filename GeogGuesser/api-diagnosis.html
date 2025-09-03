@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Maps API 問題診斷報告</title>
+    <style>
+        body {
+            font-family: 'Arial', 'Microsoft JhengHei', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            border-left: 5px solid;
+        }
+        .error { background: #fff5f5; border-color: #e53e3e; color: #c53030; }
+        .warning { background: #fffbeb; border-color: #d69e2e; color: #975a16; }
+        .success { background: #f0fff4; border-color: #38a169; color: #2f855a; }
+        .info { background: #ebf8ff; border-color: #3182ce; color: #2c5282; }
+
+        .step {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 14px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 10px 5px;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+
+        h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+
+        .timeline {
+            border-left: 3px solid #007bff;
+            margin: 20px 0;
+            padding-left: 30px;
+        }
+
+        .timeline-item {
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -38px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #007bff;
+        }
+
+        .checklist {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .checklist ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .checklist li {
+            padding: 8px 0;
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .checklist li::before {
+            content: '☐';
+            position: absolute;
+            left: 0;
+            font-size: 18px;
+            color: #6c757d;
+        }
+
+        .checklist li.completed::before {
+            content: '✅';
+        }
+
+        .api-test {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 2px solid #2196f3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Google Maps API 問題診斷報告</h1>
+
+        <div class="status error">
+            <h3>❌ 當前狀態：API 認證失敗</h3>
+            <p>你的 Google Maps API 無法載入，導致遊戲無法使用真實街景功能。</p>
+        </div>
+
+        <h2>📋 問題分析</h2>
+
+        <div class="timeline">
+            <div class="timeline-item">
+                <h4>1. API 金鑰狀態</h4>
+                <div class="status warning">
+                    <strong>你的 API 金鑰:</strong> <code>AIzaSyCkb3gNyldoHpt7IwyduZtXQ2Br1K0ooc0</code><br>
+                    <strong>狀態:</strong> 金鑰本身有效，但配置有問題
+                </div>
+                <p>我們通過 curl 測試確認這個金鑰可以從 Google 伺服器獲取響應，所以金鑰本身是有效的。</p>
+            </div>
+
+            <div class="timeline-item">
+                <h4>2. 錯誤類型</h4>
+                <div class="status error">
+                    <strong>錯誤:</strong> API 認證失敗 (RefererNotAllowedMapError)
+                </div>
+                <p>這是最常見的 Google Maps API 錯誤，通常由 HTTP 引薦者 (Referer) 限制導致。</p>
+            </div>
+
+            <div class="timeline-item">
+                <h4>3. 根本原因</h4>
+                <div class="status info">
+                    Google Maps API 的安全機制阻止了來自 <code>localhost:8000</code> 的請求，因為你的 API 金鑰沒有正確設定域名白名單。
+                </div>
+            </div>
+        </div>
+
+        <h2>🔧 詳細修復步驟</h2>
+
+        <div class="step">
+            <h3>步驟 1: 前往 Google Cloud Console</h3>
+            <p>點擊下面的連結直接前往你的 API 金鑰管理頁面：</p>
+            <a href="https://console.cloud.google.com/apis/credentials" target="_blank" class="btn">
+                🚀 開啟 Google Cloud Console
+            </a>
+        </div>
+
+        <div class="step">
+            <h3>步驟 2: 找到並編輯你的 API 金鑰</h3>
+            <ol>
+                <li>在憑證頁面中，找到你的 API 金鑰</li>
+                <li>點擊 API 金鑰名稱（不是複製按鈕）</li>
+                <li>進入編輯頁面</li>
+            </ol>
+        </div>
+
+        <div class="step">
+            <h3>步驟 3: 設定應用程式限制</h3>
+            <p>在 API 金鑰編輯頁面中：</p>
+            <ol>
+                <li>找到「<strong>應用程式限制</strong>」區域</li>
+                <li>選擇「<strong>HTTP 引薦者 (網站)</strong>」選項</li>
+                <li>在「<strong>網站限制</strong>」欄位中，點擊「新增項目」</li>
+                <li>逐一加入以下 4 個網址：</li>
+            </ol>
+
+            <div class="code-block">
+http://localhost:8000/*
+http://127.0.0.1:8000/*
+localhost:8000/*
+127.0.0.1:8000/*
+            </div>
+
+            <div class="status warning">
+                <strong>重要:</strong> 每個網址都必須包含結尾的 <code>/*</code> 符號！
+            </div>
+        </div>
+
+        <div class="step">
+            <h3>步驟 4: 確認已啟用的 API</h3>
+            <p>確保以下 API 已經啟用：</p>
+            <div class="checklist">
+                <ul>
+                    <li>Maps JavaScript API</li>
+                    <li>Street View Static API</li>
+                    <li>Places API (可選，但建議啟用)</li>
+                </ul>
+            </div>
+
+            <a href="https://console.cloud.google.com/apis/library" target="_blank" class="btn">
+                📚 檢查 API 程式庫
+            </a>
+        </div>
+
+        <div class="step">
+            <h3>步驟 5: 儲存設定並等待生效</h3>
+            <ol>
+                <li>點擊「<strong>儲存</strong>」按鈕</li>
+                <li>等待 1-2 分鐘讓設定生效</li>
+                <li>重新整理遊戲頁面測試</li>
+            </ol>
+        </div>
+
+        <h2>🧪 測試修復結果</h2>
+
+        <div class="api-test">
+            <h3>測試工具</h3>
+            <p>完成上述設定後，使用以下測試工具驗證修復：</p>
+
+            <a href="simple-test.html" target="_blank" class="btn btn-success">
+                🔬 API 簡單測試
+            </a>
+
+            <a href="index.html" target="_blank" class="btn">
+                🎮 完整遊戲測試
+            </a>
+
+            <p><strong>預期結果:</strong></p>
+            <ul>
+                <li>✅ 步驟 2: Google Maps API 載入成功</li>
+                <li>✅ 步驟 3: 地圖初始化成功</li>
+                <li>🗺️ 能看到真實的世界地圖</li>
+                <li>🏙️ 能看到街景圖像</li>
+            </ul>
+        </div>
+
+        <h2>❓ 為什麼會出現這個問題？</h2>
+
+        <div class="status info">
+            <h4>安全機制解釋:</h4>
+            <p>Google Maps API 使用 HTTP Referer 檢查來防止 API 金鑰被濫用。當瀏覽器從 <code>localhost:8000</code> 請求地圖資料時，Google 會檢查這個域名是否在你的 API 金鑰白名單中。</p>
+
+            <p><strong>沒有設定限制時：</strong> API 金鑰完全開放，任何網站都能使用（安全風險）</p>
+            <p><strong>設定限制後：</strong> 只有白名單中的域名才能使用（安全但需要正確配置）</p>
+        </div>
+
+        <h2>🛠️ 常見問題排除</h2>
+
+        <div class="status warning">
+            <h4>如果修復後仍然無法使用：</h4>
+            <ol>
+                <li><strong>清除瀏覽器快取</strong> - 按 Ctrl+Shift+R (Windows) 或 Cmd+Shift+R (Mac)</li>
+                <li><strong>檢查拼寫</strong> - 確認網址限制沒有拼寫錯誤</li>
+                <li><strong>暫時移除限制</strong> - 在應用程式限制中選擇「無」進行測試</li>
+                <li><strong>檢查配額</strong> - 確認 API 使用量沒有超過每日限制</li>
+                <li><strong>重新生成金鑰</strong> - 如果問題持續，建立新的 API 金鑰</li>
+            </ol>
+        </div>
+
+        <div class="status success">
+            <h4>💡 修復成功後你將能夠：</h4>
+            <ul>
+                <li>🌍 看到真實的 Google 街景圖像</li>
+                <li>🗺️ 在互動式世界地圖上進行猜測</li>
+                <li>📍 獲得精確的距離計算</li>
+                <li>🎯 享受完整的地理猜測遊戲體驗</li>
+            </ul>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+            <h3>🎮 遊戲連結</h3>
+            <a href="offline.html" class="btn">🎯 離線版本（當前可用）</a>
+            <a href="index.html" class="btn btn-success">🌍 完整版本（修復 API 後）</a>
+        </div>
+    </div>
+
+    <script>
+        // 添加一些互動性
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Google Maps API 診斷報告已載入');
+            console.log('請按照步驟修復 API 設定');
+        });
+    </script>
+</body>
+</html>
+

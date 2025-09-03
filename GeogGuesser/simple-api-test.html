@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>簡單API測試</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        #status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+        #map, #streetview {
+            height: 300px;
+            width: 100%;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Google Maps API 簡單測試</h1>
+
+        <div id="status" class="warning">⏳ 載入中...</div>
+
+        <h3>地圖測試</h3>
+        <div id="map"></div>
+
+        <h3>街景測試</h3>
+        <div id="streetview"></div>
+
+        <div id="details"></div>
+    </div>
+
+    <script>
+        function updateStatus(message, type) {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = type;
+        }
+
+        function initTest() {
+            console.log('開始API測試');
+            updateStatus('✅ Google Maps API 載入成功', 'success');
+
+            try {
+                // 測試地圖
+                const map = new google.maps.Map(document.getElementById('map'), {
+                    center: { lat: 25.0330, lng: 121.5654 }, // 台北
+                    zoom: 10
+                });
+                console.log('✅ 地圖創建成功');
+
+                // 測試街景
+                const streetView = new google.maps.StreetViewPanorama(
+                    document.getElementById('streetview'),
+                    {
+                        position: { lat: 25.0330, lng: 121.5654 },
+                        pov: { heading: 165, pitch: 0 },
+                        zoom: 1
+                    }
+                );
+                console.log('✅ 街景創建成功');
+
+                // 測試幾何計算
+                if (google.maps.geometry) {
+                    const dist = google.maps.geometry.spherical.computeDistanceBetween(
+                        new google.maps.LatLng(25.0330, 121.5654),
+                        new google.maps.LatLng(35.6762, 139.6503)
+                    );
+                    console.log('✅ 距離計算成功:', Math.round(dist/1000), 'km');
+
+                    updateStatus('✅ 所有測試通過！API 工作正常', 'success');
+                    document.getElementById('details').innerHTML = `
+                        <div style="background: #e8f5e8; padding: 15px; border-radius: 5px; margin-top: 15px;">
+                            <h4>✅ 測試結果</h4>
+                            <p>✅ 地圖服務：正常</p>
+                            <p>✅ 街景服務：正常</p>
+                            <p>✅ 幾何計算：正常</p>
+                            <p><strong>API配置正確，可以開始遊戲！</strong></p>
+                        </div>
+                    `;
+                } else {
+                    throw new Error('幾何庫未載入');
+                }
+
+            } catch (error) {
+                console.error('測試失敗:', error);
+                updateStatus('❌ 測試失敗: ' + error.message, 'error');
+
+                document.getElementById('details').innerHTML = `
+                    <div style="background: #ffe6e6; padding: 15px; border-radius: 5px; margin-top: 15px;">
+                        <h4>❌ 錯誤詳情</h4>
+                        <p><strong>錯誤:</strong> ${error.message}</p>
+                        <h5>可能的解決方案:</h5>
+                        <ol>
+                            <li>檢查 Google Cloud Console 中是否啟用了以下API：
+                                <ul>
+                                    <li>Maps JavaScript API</li>
+                                    <li>Street View Static API</li>
+                                    <li>Places API (可選)</li>
+                                </ul>
+                            </li>
+                            <li>確認 API 金鑰沒有限制設置</li>
+                            <li>檢查計費是否已啟用</li>
+                        </ol>
+                    </div>
+                `;
+            }
+        }
+
+        // 錯誤處理函數
+        window.gm_authFailure = function() {
+            updateStatus('❌ API 認證失敗', 'error');
+            console.error('Google Maps API 認證失敗');
+        };
+    </script>
+
+    <!-- Google Maps API -->
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCkb3gNyldoHpt7IwyduZtXQ2Br1K0ooc0&libraries=geometry&callback=initTest">
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Maps API 問題診斷</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .status-card {
+            margin: 15px 0;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid;
+        }
+        .success {
+            background: #d4edda;
+            border-left-color: #28a745;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+            color: #721c24;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+            color: #856404;
+        }
+        .info {
+            background: #d1ecf1;
+            border-left-color: #17a2b8;
+            color: #0c5460;
+        }
+        #map, #streetview {
+            height: 400px;
+            width: 100%;
+            margin: 15px 0;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 8px;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        .btn:hover { background: #0056b3; }
+        .btn-success { background: #28a745; }
+        .btn-success:hover { background: #218838; }
+        .log-console {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 250px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            line-height: 1.4;
+        }
+        .api-key-display {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            margin: 15px 0;
+            font-family: monospace;
+            word-break: break-all;
+        }
+        .solution-box {
+            background: #e7f3ff;
+            border: 2px solid #0066cc;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Google Maps API 完整診斷工具</h1>
+        <p>正在檢測你的API配置問題...</p>
+
+        <div class="api-key-display">
+            <strong>使用的API金鑰:</strong> AIzaSyCkb3gNyldoHpt7IwyduZtXQ2Br1K0ooc0
+        </div>
+
+        <div id="step1" class="status-card warning">
+            ⏳ 步驟 1: 檢查網路連線...
+        </div>
+
+        <div id="step2" class="status-card warning">
+            ⏳ 步驟 2: 檢查API載入...
+        </div>
+
+        <div id="step3" class="status-card warning">
+            ⏳ 步驟 3: 檢查API服務...
+        </div>
+
+        <div class="status-card info">
+            <h3>🎛️ 控制台</h3>
+            <div id="console-log" class="log-console">診斷開始...\n</div>
+            <button class="btn" onclick="clearConsole()">清除日誌</button>
+            <button class="btn btn-success" onclick="runFullDiagnosis()">重新診斷</button>
+        </div>
+
+        <div id="test-controls" style="display: none;">
+            <button class="btn" onclick="testMap()">測試地圖</button>
+            <button class="btn" onclick="testStreetView()">測試街景</button>
+            <button class="btn" onclick="testGeometry()">測試幾何</button>
+        </div>
+
+        <div id="map-section" style="display: none;">
+            <h3>🗺️ 地圖測試</h3>
+            <div id="map"></div>
+        </div>
+
+        <div id="streetview-section" style="display: none;">
+            <h3>📷 街景測試</h3>
+            <div id="streetview"></div>
+        </div>
+
+        <div id="solution" style="display: none;">
+            <div class="solution-box">
+                <h3>🛠️ 解決方案</h3>
+                <div id="solution-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let logConsole = document.getElementById('console-log');
+        let currentStep = 1;
+
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const colors = {
+                'info': '#3498db',
+                'success': '#2ecc71',
+                'error': '#e74c3c',
+                'warning': '#f39c12'
+            };
+
+            logConsole.innerHTML += `<span style="color: ${colors[type]}">[${timestamp}] ${message}</span>\n`;
+            logConsole.scrollTop = logConsole.scrollHeight;
+            console.log(message);
+        }
+
+        function updateStep(stepNum, message, type) {
+            const stepElement = document.getElementById(`step${stepNum}`);
+            stepElement.className = `status-card ${type}`;
+            stepElement.innerHTML = message;
+        }
+
+        function clearConsole() {
+            logConsole.innerHTML = '日誌已清除...\n';
+        }
+
+        // 步驟1：檢查網路
+        function checkNetwork() {
+            log('📡 檢查網路連線...', 'info');
+            if (navigator.onLine) {
+                updateStep(1, '✅ 步驟 1: 網路連線正常', 'success');
+                log('✅ 網路連線正常', 'success');
+                checkApiLoad();
+            } else {
+                updateStep(1, '❌ 步驟 1: 網路連線失敗', 'error');
+                log('❌ 網路連線失敗', 'error');
+                showSolution('網路連線問題');
+            }
+        }
+
+        // 步驟2：檢查API載入
+        function checkApiLoad() {
+            log('🔍 檢查Google Maps API載入...', 'info');
+
+            if (typeof google !== 'undefined' && google.maps) {
+                updateStep(2, '✅ 步驟 2: Google Maps API 載入成功', 'success');
+                log('✅ Google Maps API 載入成功', 'success');
+                checkApiServices();
+            } else {
+                updateStep(2, '❌ 步驟 2: Google Maps API 載入失敗', 'error');
+                log('❌ Google Maps API 載入失敗', 'error');
+                showSolution('API載入失敗');
+            }
+        }
+
+        // 步驟3：檢查API服務
+        function checkApiServices() {
+            log('🔧 檢查API服務...', 'info');
+
+            try {
+                // 測試基本地圖
+                const testMap = new google.maps.Map(document.createElement('div'), {
+                    center: { lat: 0, lng: 0 },
+                    zoom: 1
+                });
+                log('✅ 地圖服務可用', 'success');
+
+                // 測試街景
+                const testStreetView = new google.maps.StreetViewPanorama(
+                    document.createElement('div'),
+                    { position: { lat: 35.6762, lng: 139.6503 } }
+                );
+                log('✅ 街景服務可用', 'success');
+
+                // 測試幾何計算
+                if (google.maps.geometry && google.maps.geometry.spherical) {
+                    log('✅ 幾何服務可用', 'success');
+                    updateStep(3, '✅ 步驟 3: 所有API服務正常', 'success');
+                    showTestControls();
+                } else {
+                    throw new Error('幾何庫未載入');
+                }
+
+            } catch (error) {
+                updateStep(3, '❌ 步驟 3: API服務錯誤', 'error');
+                log(`❌ API服務錯誤: ${error.message}`, 'error');
+
+                if (error.message.includes('ApiNotActivatedMapError')) {
+                    showSolution('ApiNotActivatedMapError');
+                } else {
+                    showSolution('其他API錯誤');
+                }
+            }
+        }
+
+        function showTestControls() {
+            document.getElementById('test-controls').style.display = 'block';
+            log('🎮 診斷完成，可以開始詳細測試', 'success');
+        }
+
+        function testMap() {
+            log('🗺️ 測試地圖功能...', 'info');
+            document.getElementById('map-section').style.display = 'block';
+
+            const map = new google.maps.Map(document.getElementById('map'), {
+                center: { lat: 25.0330, lng: 121.5654 },
+                zoom: 12
+            });
+
+            const marker = new google.maps.Marker({
+                position: { lat: 25.0330, lng: 121.5654 },
+                map: map,
+                title: '台北101'
+            });
+
+            log('✅ 地圖和標記顯示成功', 'success');
+        }
+
+        function testStreetView() {
+            log('📷 測試街景功能...', 'info');
+            document.getElementById('streetview-section').style.display = 'block';
+
+            const streetView = new google.maps.StreetViewPanorama(
+                document.getElementById('streetview'),
+                {
+                    position: { lat: 25.0330, lng: 121.5654 },
+                    pov: { heading: 165, pitch: 0 },
+                    zoom: 1
+                }
+            );
+
+            log('✅ 街景顯示成功', 'success');
+        }
+
+        function testGeometry() {
+            log('📐 測試幾何計算...', 'info');
+
+            const taipei = new google.maps.LatLng(25.0330, 121.5654);
+            const tokyo = new google.maps.LatLng(35.6762, 139.6503);
+
+            const distance = google.maps.geometry.spherical.computeDistanceBetween(taipei, tokyo);
+            const distanceKm = Math.round(distance / 1000);
+
+            log(`✅ 距離計算成功: 台北到東京 ${distanceKm}公里`, 'success');
+        }
+
+        function showSolution(problemType) {
+            const solutionDiv = document.getElementById('solution');
+            const contentDiv = document.getElementById('solution-content');
+
+            let content = '';
+
+            switch (problemType) {
+                case 'ApiNotActivatedMapError':
+                    content = `
+                        <h4>❌ ApiNotActivatedMapError 解決方案</h4>
+                        <p><strong>問題:</strong> Maps JavaScript API 未啟用</p>
+                        <ol>
+                            <li>前往 <a href="https://console.cloud.google.com/apis/library/maps-backend.googleapis.com" target="_blank">Google Cloud Console - Maps JavaScript API</a></li>
+                            <li>選擇你的專案</li>
+                            <li>點擊「啟用」按鈕</li>
+                            <li>等待啟用完成（可能需要幾分鐘）</li>
+                        </ol>
+                        <p><strong>同時也要啟用:</strong></p>
+                        <ul>
+                            <li><a href="https://console.cloud.google.com/apis/library/street-view-image-backend.googleapis.com" target="_blank">Street View Static API</a></li>
+                            <li><a href="https://console.cloud.google.com/apis/library/geocoding-backend.googleapis.com" target="_blank">Geocoding API</a> (可選)</li>
+                        </ul>
+                    `;
+                    break;
+                case 'API載入失敗':
+                    content = `
+                        <h4>❌ API 載入失敗解決方案</h4>
+                        <ol>
+                            <li>檢查API金鑰是否正確</li>
+                            <li>檢查網路連線</li>
+                            <li>確認瀏覽器沒有阻擋JavaScript</li>
+                            <li>嘗試重新載入頁面</li>
+                        </ol>
+                    `;
+                    break;
+                default:
+                    content = `
+                        <h4>❌ 一般解決方案</h4>
+                        <ol>
+                            <li>檢查 Google Cloud Console 計費是否已啟用</li>
+                            <li>確認 API 金鑰沒有 IP 或域名限制</li>
+                            <li>檢查 API 配額是否已用完</li>
+                            <li>確認專案有足夠的信用額度</li>
+                        </ol>
+                    `;
+            }
+
+            contentDiv.innerHTML = content;
+            solutionDiv.style.display = 'block';
+        }
+
+        function runFullDiagnosis() {
+            log('🔄 重新開始完整診斷...', 'info');
+            clearConsole();
+
+            // 重設所有步驟
+            updateStep(1, '⏳ 步驟 1: 檢查網路連線...', 'warning');
+            updateStep(2, '⏳ 步驟 2: 檢查API載入...', 'warning');
+            updateStep(3, '⏳ 步驟 3: 檢查API服務...', 'warning');
+
+            document.getElementById('solution').style.display = 'none';
+
+            setTimeout(checkNetwork, 1000);
+        }
+
+        // API錯誤處理
+        window.gm_authFailure = function() {
+            updateStep(2, '❌ 步驟 2: API 認證失敗', 'error');
+            log('❌ Google Maps API 認證失敗', 'error');
+            showSolution('ApiNotActivatedMapError');
+        };
+
+        // 頁面載入後自動開始診斷
+        window.addEventListener('load', function() {
+            setTimeout(runFullDiagnosis, 500);
+        });
+    </script>
+
+    <!-- Google Maps API 載入 -->
+    <script>
+        function initDiagnosis() {
+            log('🚀 Google Maps API 載入完成，開始檢查...', 'success');
+            checkApiLoad();
+        }
+    </script>
+
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCkb3gNyldoHpt7IwyduZtXQ2Br1K0ooc0&libraries=geometry&callback=initDiagnosis">
+    </script>
+</body>
+</html>
