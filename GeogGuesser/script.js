@@ -16,6 +16,7 @@ let gameState = {
     map: null,
     guessMarker: null,
     actualMarker: null,
+    connectionLine: null, // 添加連接線追蹤
     isRoundComplete: false
 };
 
@@ -84,6 +85,7 @@ function startNewRound() {
     // 清除標記
     if (gameState.guessMarker) gameState.guessMarker.setMap(null);
     if (gameState.actualMarker) gameState.actualMarker.setMap(null);
+    if (gameState.connectionLine) gameState.connectionLine.setMap(null); // 清除連接線
 
     // 隱藏UI元素
     document.getElementById('round-result').style.display = 'none';
@@ -186,7 +188,7 @@ function makeGuess() {
     });
 
     // 顯示連接線
-    new google.maps.Polyline({
+    gameState.connectionLine = new google.maps.Polyline({
         path: [gameState.guessLocation, actualLocation],
         geodesic: true,
         strokeColor: '#FF5722',
@@ -203,6 +205,7 @@ function makeGuess() {
 
     // 顯示結果
     document.getElementById('result-round').textContent = gameState.currentRound;
+    document.getElementById('result-location').textContent = gameState.currentLocation.name;
     document.getElementById('result-distance').textContent = Math.round(distance);
     document.getElementById('result-points').textContent = points;
     document.getElementById('round-result').style.display = 'block';
@@ -235,6 +238,7 @@ function nextRound() {
 
     if (gameState.guessMarker) gameState.guessMarker.setMap(null);
     if (gameState.actualMarker) gameState.actualMarker.setMap(null);
+    if (gameState.connectionLine) gameState.connectionLine.setMap(null); // 清除連接線
 
     gameState.currentRound++;
     startNewRound();
@@ -250,6 +254,7 @@ function startNewGame() {
 
     if (gameState.guessMarker) gameState.guessMarker.setMap(null);
     if (gameState.actualMarker) gameState.actualMarker.setMap(null);
+    if (gameState.connectionLine) gameState.connectionLine.setMap(null); // 清除連接線
 
     document.getElementById('game-end').style.display = 'none';
     document.getElementById('game-container').style.display = 'block';
