@@ -16,18 +16,14 @@
     </div>
 
     <div id="game-container" class="game-container" style="display: none;">
-        <header class="game-header">
-            <h1>WorldGuesser</h1>
-            <div class="game-info">
-                <span class="round-info">第 <span id="current-round">1</span> 輪 / 共 5 輪</span>
-                <span class="score-info">總分：<span id="total-score">0</span></span>
-            </div>
-        </header>
-
         <div class="game-content">
             <div class="streetview-container">
                 <div id="streetview" class="streetview"></div>
                 <div class="streetview-overlay">
+                    <div class="game-info-overlay">
+                        <span class="round-info">第 <span id="current-round">1</span> 輪 / 共 5 輪</span>
+                        <span class="score-info">總分：<span id="total-score">0</span></span>
+                    </div>
                     <button id="next-round" class="next-button" style="display: none;">下一輪</button>
                 </div>
             </div>
@@ -64,7 +60,7 @@
 
     <!-- Google Maps API -->
     <script async defer
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCkb3gNyldoHpt7IwyduZtXQ2Br1K0ooc0&libraries=geometry&callback=initGame">
+        src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEYu8&libraries=geometry&callback=initGame">
     </script>
 </body>
 </html>

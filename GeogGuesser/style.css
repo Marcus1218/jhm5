@@ -64,49 +64,21 @@ body {
     flex-direction: column;
 }
 
-/* Game Header */
-.game-header {
-    background: rgba(255, 255, 255, 0.95);
-    padding: 1rem 2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    z-index: 1000;
-}
-
-.game-header h1 {
-    font-size: 2rem;
-    color: #333;
-    margin: 0;
-}
-
-.game-info {
-    display: flex;
-    gap: 2rem;
-    font-size: 1.1rem;
-    color: #666;
-}
-
-.round-info, .score-info {
-    background: #f8f9fa;
-    padding: 0.5rem 1rem;
-    border-radius: 20px;
-    border: 2px solid #e9ecef;
-}
-
 /* Game Content */
 .game-content {
-    display: flex;
-    flex: 1;
-    height: calc(100vh - 120px);
+    position: relative;
+    width: 100vw;
+    height: 100vh;
 }
 
-/* Street View Container */
+/* Street View Container - 全屏 */
 .streetview-container {
-    flex: 1;
-    position: relative;
-    border-right: 3px solid #fff;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1;
 }
 
 .streetview {
@@ -119,64 +91,110 @@ body {
     top: 1rem;
     right: 1rem;
     z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1rem;
+}
+
+/* 新的遊戲信息疊加層 - 右上角 */
+.game-info-overlay {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-end;
+}
+
+.game-info-overlay .round-info,
+.game-info-overlay .score-info {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 0.8rem 1.2rem;
+    border-radius: 25px;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+    font-size: 1.1rem;
+    color: #333;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    text-shadow: none;
 }
 
 .next-button {
-    background: #4CAF50;
+    background: linear-gradient(135deg, #4CAF50, #45a049);
     color: white;
     border: none;
-    padding: 12px 24px;
-    font-size: 1rem;
-    border-radius: 25px;
+    padding: 15px 30px;
+    font-size: 1.1rem;
+    border-radius: 30px;
     cursor: pointer;
-    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
     transition: all 0.3s ease;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .next-button:hover {
-    background: #45a049;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+    background: linear-gradient(135deg, #45a049, #4CAF50);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(76, 175, 80, 0.5);
 }
 
-/* Map Container */
+/* Map Container - 右下角小地圖 */
 .map-container {
-    flex: 1;
-    position: relative;
-    display: flex;
-    flex-direction: column;
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 300px;
+    height: 200px;
+    z-index: 1000;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    backdrop-filter: blur(10px);
+}
+
+.map-container:hover {
+    width: 500px;
+    height: 400px;
+    transform: translate(-50px, -50px);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    z-index: 1001;
 }
 
 .map {
-    flex: 1;
     width: 100%;
+    height: calc(100% - 60px);
 }
 
 .map-controls {
     background: rgba(255, 255, 255, 0.95);
-    padding: 1rem;
+    padding: 10px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-top: 1px solid #ddd;
+    height: 60px;
+    backdrop-filter: blur(10px);
 }
 
 .guess-button {
-    background: #FF5722;
+    background: linear-gradient(135deg, #FF5722, #E64A19);
     color: white;
     border: none;
-    padding: 12px 24px;
-    font-size: 1rem;
-    border-radius: 25px;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    border-radius: 20px;
     cursor: pointer;
     box-shadow: 0 4px 15px rgba(255, 87, 34, 0.3);
     transition: all 0.3s ease;
     flex: 1;
-    margin-right: 1rem;
+    margin-right: 8px;
+    font-weight: bold;
 }
 
 .guess-button:hover:not(:disabled) {
-    background: #E64A19;
+    background: linear-gradient(135deg, #E64A19, #FF5722);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(255, 87, 34, 0.4);
 }
@@ -188,21 +206,16 @@ body {
 }
 
 .new-game-button {
-    background: #2196F3;
+    background: linear-gradient(135deg, #2196F3, #1976D2);
     color: white;
     border: none;
-    padding: 12px 24px;
-    font-size: 1rem;
-    border-radius: 25px;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    border-radius: 20px;
     cursor: pointer;
     box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
     transition: all 0.3s ease;
-}
-
-.new-game-button:hover {
-    background: #1976D2;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(33, 150, 243, 0.4);
+    font-weight: bold;
 }
 
 /* Bottom Panel */
