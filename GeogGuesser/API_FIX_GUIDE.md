@@ -3,10 +3,6 @@
 ## 問題分析
 你遇到的 `ApiNotActivatedMapError` 錯誤表示雖然你的API金鑰是有效的，但缺少某些必要的API服務啟用。
 
-## 當前API金鑰
-```
-AIzaSyCkb3gNyldoHpt7IwyduZtXQ2Br1K0ooc0
-```
 
 ## 必須啟用的API服務
 
